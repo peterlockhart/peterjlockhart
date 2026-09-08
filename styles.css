@@ -1,1 +1,38 @@
 /* Bento personal site styles */
+
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #5a5a5a;
+  --border: #e2e0da;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --accent: #2f6fed;
+  --radius: 14px;
+  --gap: 1rem;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --surface: #1d2025;
+    --text: #f2f1ee;
+    --text-muted: #a8a8a8;
+    --border: #2c2f36;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --accent: #6d9dff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  padding: clamp(1rem, 4vw, 2.5rem);
+}
