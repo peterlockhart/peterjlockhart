@@ -33,8 +33,12 @@ First pass ships placeholder copy; content gets refined later.
 | Social links | Small (1×1) | Icon row: Instagram, Facebook, GitHub, Dribbble — inline SVG icons, real profile URLs |
 | Family | Medium (1×2) | Mentions Consuelo + "our four pets" (generic, no names yet) |
 | Sparrow Sleeps | Medium (1×1) | One-line placeholder description, links to sparrowsleeps.com |
-| Spokenote | Medium (1×1) | One-line placeholder description, links to spokenote.com |
 | Foxio | Medium (1×1) | One-line placeholder description, links to fox.io |
+| Illustration | Medium (1×1) | One-line placeholder description |
+| Branding | Medium (1×1) | One-line placeholder description |
+| Woodworking | Medium (1×1) | One-line placeholder description |
+| Welding | Medium (1×1) | One-line placeholder description |
+| Home Renovations | Medium (1×1) | One-line placeholder description |
 
 Social profile URLs:
 - Instagram: https://instagram.com/peterlockhart
@@ -58,7 +62,7 @@ Social profile URLs:
 
 - Real photos/avatars.
 - Real pet names for the Family box.
-- Additional boxes beyond the six listed.
+- Additional boxes beyond the ten listed.
 - Any backend, analytics, or build tooling.
 - Manual light/dark toggle UI.
 
