@@ -86,3 +86,19 @@ body {
     grid-row: span 1;
   }
 }
+
+.box h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.box h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.box p {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
