@@ -67,6 +67,8 @@
     updateToggleLabel();
   }
 
+  var TRANSITION_MS = 1000;
+
   var lightbox = document.getElementById('lightbox');
   var lightboxSlides = document.getElementById('lightbox-slides');
   var lightboxDots = document.getElementById('lightbox-dots');
@@ -75,6 +77,19 @@
   var lightboxTimer = null;
   var lightboxIndex = 0;
   var lastTrigger = null;
+  var activeCarouselRoot = null;
+  var pendingTransitionTimeout = null;
+  var closingLightbox = false;
+
+  // Returns the transform that, applied to an element naturally laid out at
+  // naturalRect, makes it visually appear at desiredRect instead (FLIP invert step).
+  function invertTransform(naturalRect, desiredRect) {
+    var scaleX = desiredRect.width / naturalRect.width;
+    var scaleY = desiredRect.height / naturalRect.height;
+    var dx = (desiredRect.left + desiredRect.width / 2) - (naturalRect.left + naturalRect.width / 2);
+    var dy = (desiredRect.top + desiredRect.height / 2) - (naturalRect.top + naturalRect.height / 2);
+    return 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scaleX + ', ' + scaleY + ')';
+  }
 
   function showLightboxSlide(index) {
     var slides = lightboxSlides.querySelectorAll('img');
@@ -109,14 +124,22 @@
   }
 
   function openLightbox(root, startIndex) {
-    var slides = root.querySelectorAll('.carousel-slide');
+    if (pendingTransitionTimeout) {
+      window.clearTimeout(pendingTransitionTimeout);
+      pendingTransitionTimeout = null;
+    }
+    closingLightbox = false;
+
+    var boxSlides = root.querySelectorAll('.carousel-slide');
+    var sourceImg = boxSlides[startIndex];
+    var startRect = sourceImg ? sourceImg.getBoundingClientRect() : null;
     var title = root.querySelector('h2');
     var description = root.querySelector('p');
 
     lightboxSlides.innerHTML = '';
     lightboxDots.innerHTML = '';
 
-    slides.forEach(function (slide, n) {
+    boxSlides.forEach(function (slide, n) {
       var img = document.createElement('img');
       img.className = 'lightbox-slide';
       img.src = slide.src;
@@ -147,20 +170,81 @@
       lightboxCaption.appendChild(p);
     }
 
+    activeCarouselRoot = root;
     lastTrigger = root.querySelector('.carousel-trigger');
     lightbox.hidden = false;
     document.body.classList.add('lightbox-open');
+
+    var targetImg = lightboxSlides.querySelectorAll('img')[startIndex];
+    if (targetImg) {
+      // Suppress the opacity crossfade for this reveal — position/scale is what animates in.
+      targetImg.style.transition = 'none';
+    }
     showLightboxSlide(startIndex);
-    startLightboxAutoplay();
+
+    var animated = false;
+    if (targetImg && startRect && startRect.width && startRect.height && !prefersReducedMotion) {
+      var naturalRect = targetImg.getBoundingClientRect();
+      if (naturalRect.width && naturalRect.height) {
+        animated = true;
+        targetImg.style.transformOrigin = 'center center';
+        targetImg.style.transform = invertTransform(naturalRect, startRect);
+        // Force a reflow so the snapped-to-box position is committed before animating away from it.
+        void targetImg.offsetWidth;
+        targetImg.style.transition = 'transform ' + TRANSITION_MS + 'ms ease';
+        targetImg.style.transform = 'none';
+        pendingTransitionTimeout = window.setTimeout(function () {
+          targetImg.style.transition = '';
+          targetImg.style.transform = '';
+          targetImg.style.transformOrigin = '';
+          pendingTransitionTimeout = null;
+          startLightboxAutoplay();
+        }, TRANSITION_MS);
+      }
+    }
+    if (targetImg && !animated) {
+      targetImg.style.transition = '';
+    }
+    if (!animated) {
+      startLightboxAutoplay();
+    }
+
     lightboxClose.focus();
   }
 
-  function closeLightbox() {
-    stopLightboxAutoplay();
+  function finishClose() {
+    closingLightbox = false;
+    pendingTransitionTimeout = null;
     lightbox.hidden = true;
     document.body.classList.remove('lightbox-open');
     if (lastTrigger) {
       lastTrigger.focus();
+    }
+  }
+
+  function closeLightbox() {
+    if (lightbox.hidden || closingLightbox) {
+      return;
+    }
+    stopLightboxAutoplay();
+    if (pendingTransitionTimeout) {
+      window.clearTimeout(pendingTransitionTimeout);
+      pendingTransitionTimeout = null;
+    }
+
+    var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
+    var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;
+    var endRect = targetImg ? targetImg.getBoundingClientRect() : null;
+
+    if (activeImg && endRect && endRect.width && endRect.height && !prefersReducedMotion) {
+      closingLightbox = true;
+      var startRect = activeImg.getBoundingClientRect();
+      activeImg.style.transformOrigin = 'center center';
+      activeImg.style.transition = 'transform ' + TRANSITION_MS + 'ms ease';
+      activeImg.style.transform = invertTransform(startRect, endRect);
+      pendingTransitionTimeout = window.setTimeout(finishClose, TRANSITION_MS);
+    } else {
+      finishClose();
     }
   }
 

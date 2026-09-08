@@ -54,7 +54,7 @@ body {
   grid-auto-rows: minmax(140px, auto);
   grid-auto-flow: dense;
   gap: var(--gap);
-  max-width: 1100px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -231,6 +231,10 @@ body {
   transform: scale(1.15);
 }
 
+.carousel-dot:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
 .carousel-trigger {
   position: absolute;
   inset: 0;
@@ -343,6 +347,10 @@ body.lightbox-open {
   background: #fff;
 }
 
+.lightbox-dot:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
 .lightbox-close {
   position: fixed;
   top: 1rem;
@@ -417,4 +425,34 @@ body.lightbox-open {
 
 :root[data-theme="dark"] .theme-toggle-icon--moon {
   display: none;
+}
+
+.box[data-name="foxio"] {
+  background: #ea2c28;
+  border-color: transparent;
+}
+
+.box[data-name="foxio"] h2,
+.box[data-name="foxio"] p,
+.box[data-name="foxio"] .box-link {
+  color: #fff;
+}
+
+.box[data-name="foxio"] .box-link {
+  text-decoration: underline;
+}
+
+.box[data-name="sparrow-sleeps"] {
+  background: #4fbc83;
+  border-color: transparent;
+}
+
+.box[data-name="sparrow-sleeps"] h2,
+.box[data-name="sparrow-sleeps"] p,
+.box[data-name="sparrow-sleeps"] .box-link {
+  color: #fff;
+}
+
+.box[data-name="sparrow-sleeps"] .box-link {
+  text-decoration: underline;
 }
