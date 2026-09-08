@@ -4,6 +4,69 @@
   var AUTOPLAY_MS = 4000;
   var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  var THEME_KEY = 'theme';
+  var darkSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  var themeToggle = document.getElementById('theme-toggle');
+
+  function getStoredTheme() {
+    try {
+      var stored = window.localStorage.getItem(THEME_KEY);
+      return stored === 'light' || stored === 'dark' ? stored : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storeTheme(theme) {
+    try {
+      window.localStorage.setItem(THEME_KEY, theme);
+    } catch (e) {
+      // localStorage unavailable (private browsing, etc.) — the choice just won't persist.
+    }
+  }
+
+  function effectiveTheme() {
+    var stored = getStoredTheme();
+    if (stored) {
+      return stored;
+    }
+    return darkSchemeQuery.matches ? 'dark' : 'light';
+  }
+
+  function updateToggleLabel() {
+    if (!themeToggle) {
+      return;
+    }
+    var current = effectiveTheme();
+    var target = current === 'dark' ? 'light' : 'dark';
+    themeToggle.setAttribute('aria-label', 'Switch to ' + target + ' theme');
+  }
+
+  function applyTheme(theme) {
+    if (theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    updateToggleLabel();
+  }
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function () {
+      var next = effectiveTheme() === 'dark' ? 'light' : 'dark';
+      storeTheme(next);
+      applyTheme(next);
+    });
+
+    darkSchemeQuery.addEventListener('change', function () {
+      if (!getStoredTheme()) {
+        updateToggleLabel();
+      }
+    });
+
+    updateToggleLabel();
+  }
+
   var lightbox = document.getElementById('lightbox');
   var lightboxSlides = document.getElementById('lightbox-slides');
   var lightboxDots = document.getElementById('lightbox-dots');
