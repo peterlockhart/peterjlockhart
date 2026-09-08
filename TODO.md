@@ -2,12 +2,15 @@
 
 - Select and include custom web fonts
 - Animate the boxes in using CSS sibling-index()
-- Add Google Analytics
 - Add Google Analytics event tracking for each bento box interaction
 - Add open graph image
 - Add Favicon
 - Lazy load the images
 - Update the social icons to better SVGs
+- Collect assets for each carousel
+- Write short bio
+- Add content to pets box
+- Add content to peterandconsuelo box
 
 
 # IDEAS AND CONSIDERATIONS
@@ -29,3 +32,4 @@
 - Add floating next / preview arrow buttons to the full screen carousel experience
 - Add link to peterandconsuelo.com in the Family box
 - Add Open Graph and Twitter Card meta tags
+- Add Google Analytics

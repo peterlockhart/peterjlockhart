@@ -101,10 +101,8 @@ body {
   grid-row: span 2;
 }
 
-.box--social {
-  container-type: inline-size;
-  align-items: center;
-  justify-content: center;
+.box[data-name="sparrow-sleeps"] {
+  grid-column: span 2;
 }
 
 @media (max-width: 899px) {
@@ -120,7 +118,8 @@ body {
 
   .box,
   .box--about,
-  .box--family {
+  .box--family,
+  .box[data-name="sparrow-sleeps"] {
     grid-column: span 1;
     grid-row: span 1;
   }
@@ -159,11 +158,13 @@ body {
 }
 
 .social-icons {
+  container-type: inline-size;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: clamp(0.75rem, 4cqw, 2rem);
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .social-icons a {
@@ -176,8 +177,8 @@ body {
 }
 
 .social-icons svg {
-  width: clamp(24px, 9cqw, 50px);
-  height: clamp(24px, 9cqw, 50px);
+  width: clamp(24px, 9cqw, 40px);
+  height: clamp(24px, 9cqw, 40px);
   flex-shrink: 0;
 }
 
