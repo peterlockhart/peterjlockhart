@@ -123,13 +123,13 @@ body {
   height: 26px;
 }
 
-.box-link {
+.link {
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   margin-top: auto;
 }
 
-.box-link:hover {
+.link:hover {
   text-decoration: underline;
 }
