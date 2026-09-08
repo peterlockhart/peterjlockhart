@@ -39,7 +39,7 @@
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
         </svg>
       </button>
-      <img class="about-photo" src="assets/peter-lockhart-headshot-bw.jpg" alt="Peter Lockhart">
+      <img class="about-photo" src="assets/peter-lockhart-headshot-bw.png" alt="Peter Lockhart">
       <div class="about-content">
         <h1>Peter Lockhart</h1>
         <p>
@@ -84,6 +84,7 @@
         Consuelo and our four pets keep life interesting. More about this
         crew — names, photos, stories — coming soon.
       </p>
+      <a class="box-link" href="https://peterandconsuelo.com?utm_source=peterjlockhart.com" target="_blank" rel="noopener noreferrer">peterandconsuelo.com</a>
     </section>
     <section class="box" data-name="sparrow-sleeps">
       <h2>Sparrow Sleeps</h2>
@@ -214,7 +215,17 @@
   <footer class="site-footer">&copy; <span id="copyright-year">2026</span> Peter Lockhart.</footer>
   <div class="lightbox" id="lightbox" hidden>
     <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close fullscreen gallery">&times;</button>
-    <div class="lightbox-inner">
+    <button type="button" class="lightbox-nav lightbox-nav--prev" id="lightbox-prev" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <button type="button" class="lightbox-nav lightbox-nav--next" id="lightbox-next" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+    <div class="lightbox-inner" id="lightbox-inner">
       <div class="lightbox-slides" id="lightbox-slides"></div>
       <div class="lightbox-caption" id="lightbox-caption"></div>
       <div class="lightbox-dots" id="lightbox-dots"></div>

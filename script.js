@@ -75,40 +75,76 @@
   var TRANSITION_MS = 1000;
 
   var lightbox = document.getElementById('lightbox');
+  lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
   var lightboxSlides = document.getElementById('lightbox-slides');
   var lightboxDots = document.getElementById('lightbox-dots');
   var lightboxCaption = document.getElementById('lightbox-caption');
   var lightboxClose = document.getElementById('lightbox-close');
+  var lightboxPrev = document.getElementById('lightbox-prev');
+  var lightboxNext = document.getElementById('lightbox-next');
+  var lightboxInner = document.getElementById('lightbox-inner');
   var lightboxTimer = null;
-  var lightboxIndex = 0;
   var lastTrigger = null;
   var activeCarouselRoot = null;
   var pendingTransitionTimeout = null;
   var closingLightbox = false;
 
-  // Returns the transform that, applied to an element naturally laid out at
-  // naturalRect, makes it visually appear at desiredRect instead (FLIP invert step).
-  function invertTransform(naturalRect, desiredRect) {
-    var scaleX = desiredRect.width / naturalRect.width;
-    var scaleY = desiredRect.height / naturalRect.height;
-    var dx = (desiredRect.left + desiredRect.width / 2) - (naturalRect.left + naturalRect.width / 2);
-    var dy = (desiredRect.top + desiredRect.height / 2) - (naturalRect.top + naturalRect.height / 2);
-    return 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scaleX + ', ' + scaleY + ')';
+  var RECT_TRANSITION_PROPS = ['width', 'height', 'top', 'left'];
+
+  // Converts a viewport rect (from getBoundingClientRect) into left/top/width/
+  // height relative to `container`'s own box, suitable for inline styles on an
+  // absolutely-positioned descendant of container. Animating real width/height
+  // (rather than a transform: scale()) keeps border-radius constant throughout —
+  // scaling via transform stretches border-radius along with everything else.
+  function rectRelativeTo(viewportRect, container) {
+    var containerRect = container.getBoundingClientRect();
+    return {
+      left: viewportRect.left - containerRect.left,
+      top: viewportRect.top - containerRect.top,
+      width: viewportRect.width,
+      height: viewportRect.height
+    };
   }
 
+  function applyRect(el, rect) {
+    el.style.left = rect.left + 'px';
+    el.style.top = rect.top + 'px';
+    el.style.width = rect.width + 'px';
+    el.style.height = rect.height + 'px';
+  }
+
+  function clearRect(el) {
+    el.style.left = '';
+    el.style.top = '';
+    el.style.width = '';
+    el.style.height = '';
+  }
+
+  // Purely a DOM-sync helper: renders the given (already-resolved) index into
+  // the lightbox's slides/dots. The box carousel itself is the single source
+  // of truth for "which slide is current" — see initCarousel's show().
   function showLightboxSlide(index) {
     var slides = lightboxSlides.querySelectorAll('img');
     var dots = lightboxDots.querySelectorAll('button');
     if (!slides.length) {
       return;
     }
-    lightboxIndex = (index + slides.length) % slides.length;
+    var resolved = (index + slides.length) % slides.length;
     slides.forEach(function (slide, n) {
-      slide.classList.toggle('is-active', n === lightboxIndex);
+      slide.classList.toggle('is-active', n === resolved);
     });
     dots.forEach(function (dot, n) {
-      dot.classList.toggle('is-active', n === lightboxIndex);
+      dot.classList.toggle('is-active', n === resolved);
     });
+  }
+
+  // Navigating in the lightbox always goes through the underlying box's own
+  // show(), so the box (hidden behind the overlay) stays on the exact same
+  // slide — closing the lightbox then always animates the matching image.
+  function goToLightboxSlide(index) {
+    if (activeCarouselRoot && activeCarouselRoot._carouselShow) {
+      activeCarouselRoot._carouselShow(index);
+    }
   }
 
   function stopLightboxAutoplay() {
@@ -124,14 +160,44 @@
       return;
     }
     lightboxTimer = window.setInterval(function () {
-      showLightboxSlide(lightboxIndex + 1);
+      if (activeCarouselRoot && activeCarouselRoot._carouselIndex) {
+        goToLightboxSlide(activeCarouselRoot._carouselIndex() + 1);
+      }
     }, AUTOPLAY_MS);
+  }
+
+  function pauseBoxAutoplay(root) {
+    if (!root || !root._carouselAdvance) {
+      return;
+    }
+    var queued = advanceQueue.indexOf(root._carouselAdvance);
+    if (queued !== -1) {
+      advanceQueue.splice(queued, 1);
+    }
+    var registered = advancers.indexOf(root._carouselAdvance);
+    if (registered !== -1) {
+      advancers.splice(registered, 1);
+    }
+  }
+
+  function resumeBoxAutoplay(root) {
+    if (!root || !root._carouselAdvance) {
+      return;
+    }
+    if (advancers.indexOf(root._carouselAdvance) === -1) {
+      advancers.push(root._carouselAdvance);
+    }
   }
 
   function openLightbox(root, startIndex) {
     if (pendingTransitionTimeout) {
       window.clearTimeout(pendingTransitionTimeout);
       pendingTransitionTimeout = null;
+    }
+    if (activeCarouselRoot && activeCarouselRoot !== root) {
+      // A previous carousel's close sequence never got to finish (interrupted
+      // by opening a different one) — don't leave its autoplay paused forever.
+      resumeBoxAutoplay(activeCarouselRoot);
     }
     closingLightbox = false;
 
@@ -157,11 +223,14 @@
       dot.setAttribute('aria-label', 'Slide ' + (n + 1));
       dot.addEventListener('click', function (event) {
         event.stopPropagation();
-        showLightboxSlide(n);
+        goToLightboxSlide(n);
         startLightboxAutoplay();
       });
       lightboxDots.appendChild(dot);
     });
+
+    lightboxPrev.hidden = boxSlides.length < 2;
+    lightboxNext.hidden = boxSlides.length < 2;
 
     lightboxCaption.innerHTML = '';
     if (title) {
@@ -176,42 +245,48 @@
     }
 
     activeCarouselRoot = root;
+    pauseBoxAutoplay(root);
     lastTrigger = root.querySelector('.carousel-trigger');
     lightbox.hidden = false;
     document.body.classList.add('lightbox-open');
 
     var targetImg = lightboxSlides.querySelectorAll('img')[startIndex];
     if (targetImg) {
-      // Suppress the opacity crossfade for this reveal — position/scale is what animates in.
+      // Suppress the opacity crossfade for this reveal — width/height/position is what animates in.
       targetImg.style.transition = 'none';
     }
     showLightboxSlide(startIndex);
 
-    var animated = false;
-    if (targetImg && startRect && startRect.width && startRect.height && !prefersReducedMotion) {
-      var naturalRect = targetImg.getBoundingClientRect();
-      if (naturalRect.width && naturalRect.height) {
-        animated = true;
-        targetImg.style.transformOrigin = 'center center';
-        targetImg.style.transform = invertTransform(naturalRect, startRect);
-        // Force a reflow so the snapped-to-box position is committed before animating away from it.
-        void targetImg.offsetWidth;
-        targetImg.style.transition = 'transform ' + TRANSITION_MS + 'ms ease';
-        targetImg.style.transform = 'none';
-        pendingTransitionTimeout = window.setTimeout(function () {
-          targetImg.style.transition = '';
-          targetImg.style.transform = '';
-          targetImg.style.transformOrigin = '';
-          pendingTransitionTimeout = null;
-          startLightboxAutoplay();
-        }, TRANSITION_MS);
-      }
-    }
-    if (targetImg && !animated) {
+    var shouldAnimate = Boolean(targetImg && startRect && startRect.width && startRect.height && !prefersReducedMotion);
+    if (shouldAnimate) {
+      applyRect(targetImg, rectRelativeTo(startRect, lightboxInner));
+    } else if (targetImg) {
       targetImg.style.transition = '';
     }
-    if (!animated) {
+
+    // Force one reflow so the pre-animation state (snapped image position, transparent
+    // overlay) is committed before switching to the end state — otherwise the browser can
+    // collapse both style changes into one frame and skip the transition entirely.
+    void lightbox.offsetWidth;
+
+    lightbox.classList.add('is-visible');
+    if (shouldAnimate) {
+      targetImg.style.transition = RECT_TRANSITION_PROPS.map(function (prop) {
+        return prop + ' ' + TRANSITION_MS + 'ms ease';
+      }).join(', ');
+      clearRect(targetImg);
+    }
+
+    if (prefersReducedMotion) {
       startLightboxAutoplay();
+    } else {
+      pendingTransitionTimeout = window.setTimeout(function () {
+        if (targetImg) {
+          targetImg.style.transition = '';
+        }
+        pendingTransitionTimeout = null;
+        startLightboxAutoplay();
+      }, TRANSITION_MS);
     }
 
     lightboxClose.focus();
@@ -222,6 +297,8 @@
     pendingTransitionTimeout = null;
     lightbox.hidden = true;
     document.body.classList.remove('lightbox-open');
+    resumeBoxAutoplay(activeCarouselRoot);
+    activeCarouselRoot = null;
     if (lastTrigger) {
       lastTrigger.focus();
     }
@@ -237,27 +314,55 @@
       pendingTransitionTimeout = null;
     }
 
+    lightbox.classList.remove('is-visible');
+
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;
     var endRect = targetImg ? targetImg.getBoundingClientRect() : null;
 
     if (activeImg && endRect && endRect.width && endRect.height && !prefersReducedMotion) {
-      closingLightbox = true;
-      var startRect = activeImg.getBoundingClientRect();
-      activeImg.style.transformOrigin = 'center center';
-      activeImg.style.transition = 'transform ' + TRANSITION_MS + 'ms ease';
-      activeImg.style.transform = invertTransform(startRect, endRect);
-      pendingTransitionTimeout = window.setTimeout(finishClose, TRANSITION_MS);
-    } else {
+      activeImg.style.transition = RECT_TRANSITION_PROPS.map(function (prop) {
+        return prop + ' ' + TRANSITION_MS + 'ms ease';
+      }).join(', ');
+      applyRect(activeImg, rectRelativeTo(endRect, lightboxInner));
+    }
+
+    if (prefersReducedMotion) {
       finishClose();
+    } else {
+      closingLightbox = true;
+      pendingTransitionTimeout = window.setTimeout(finishClose, TRANSITION_MS);
     }
   }
 
   lightboxClose.addEventListener('click', closeLightbox);
 
+  function currentLightboxIndex() {
+    return activeCarouselRoot && activeCarouselRoot._carouselIndex ? activeCarouselRoot._carouselIndex() : 0;
+  }
+
+  lightboxPrev.addEventListener('click', function () {
+    goToLightboxSlide(currentLightboxIndex() - 1);
+    startLightboxAutoplay();
+  });
+
+  lightboxNext.addEventListener('click', function () {
+    goToLightboxSlide(currentLightboxIndex() + 1);
+    startLightboxAutoplay();
+  });
+
   document.addEventListener('keydown', function (event) {
-    if (!lightbox.hidden && event.key === 'Escape') {
+    if (lightbox.hidden) {
+      return;
+    }
+    if (event.key === 'Escape') {
       closeLightbox();
+    } else if (event.key === 'ArrowLeft' && !lightboxPrev.hidden) {
+      goToLightboxSlide(currentLightboxIndex() - 1);
+      startLightboxAutoplay();
+    } else if (event.key === 'ArrowRight' && !lightboxNext.hidden) {
+      goToLightboxSlide(currentLightboxIndex() + 1);
+      startLightboxAutoplay();
     }
   });
 
@@ -322,11 +427,23 @@
       dots.forEach(function (dot, n) {
         dot.classList.toggle('is-active', n === index);
       });
+      // Mirror into the lightbox whenever this box's fullscreen view is open,
+      // so the two never drift — closing always animates the slide the
+      // visitor was just looking at.
+      if (activeCarouselRoot === root) {
+        showLightboxSlide(index);
+      }
     }
 
     var advance = function () {
       show(index + 1);
     };
+
+    root._carouselShow = show;
+    root._carouselIndex = function () {
+      return index;
+    };
+    root._carouselAdvance = advance;
 
     dots.forEach(function (dot, n) {
       dot.addEventListener('click', function (event) {

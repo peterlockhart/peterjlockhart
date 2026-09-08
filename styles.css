@@ -301,7 +301,13 @@ body {
   align-items: center;
   justify-content: center;
   padding: clamp(1rem, 4vw, 3rem);
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+}
+
+.lightbox.is-visible {
   background: rgba(0, 0, 0, 0.92);
+  pointer-events: auto;
 }
 
 .lightbox[hidden] {
@@ -330,7 +336,8 @@ body.lightbox-open {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  border-radius: var(--radius);
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -419,7 +426,45 @@ body.lightbox-open {
   background: rgba(255, 255, 255, 0.24);
 }
 
-:where(.carousel-trigger, .carousel-dot, .lightbox-close, .lightbox-dot, .theme-toggle):focus-visible {
+.lightbox-nav {
+  position: fixed;
+  top: 50%;
+  z-index: 1001;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.lightbox-nav:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.lightbox-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+.lightbox-nav--prev {
+  left: 1rem;
+}
+
+.lightbox-nav--next {
+  right: 1rem;
+}
+
+.lightbox-nav[hidden] {
+  display: none;
+}
+
+:where(.carousel-trigger, .carousel-dot, .lightbox-close, .lightbox-dot, .lightbox-nav, .theme-toggle):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
