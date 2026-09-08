@@ -465,3 +465,12 @@ body.lightbox-open {
 .box[data-name="sparrow-sleeps"] .box-link {
   text-decoration: underline;
 }
+
+.site-footer {
+  max-width: 1600px;
+  margin: 1.5rem auto 0;
+  padding: 0 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}

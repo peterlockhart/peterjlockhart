@@ -4,6 +4,11 @@
   var AUTOPLAY_MS = 4000;
   var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  var copyrightYear = document.getElementById('copyright-year');
+  if (copyrightYear) {
+    copyrightYear.textContent = new Date().getFullYear();
+  }
+
   var THEME_KEY = 'theme';
   var darkSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   var themeToggle = document.getElementById('theme-toggle');
