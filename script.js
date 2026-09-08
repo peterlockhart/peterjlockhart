@@ -256,12 +256,58 @@
     }
   });
 
+  // Slide-box carousels share one global schedule so that only one box ever
+  // transitions at a time, in a shuffled (non-sequential) order.
+  var STAGGER_MS = 5000;
+  var advancers = [];
+  var advanceQueue = [];
+  var lastAdvanced = null;
+  var staggerTimer = null;
+
+  function shuffled(list) {
+    var arr = list.slice();
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function refillAdvanceQueue() {
+    advanceQueue = shuffled(advancers);
+    if (advanceQueue.length > 1 && advanceQueue[0] === lastAdvanced) {
+      var tmp = advanceQueue[0];
+      advanceQueue[0] = advanceQueue[1];
+      advanceQueue[1] = tmp;
+    }
+  }
+
+  function runStagger() {
+    if (advanceQueue.length === 0) {
+      refillAdvanceQueue();
+    }
+    var next = advanceQueue.shift();
+    if (next) {
+      lastAdvanced = next;
+      next();
+    }
+    staggerTimer = window.setTimeout(runStagger, STAGGER_MS);
+  }
+
+  function startStagger() {
+    if (staggerTimer || prefersReducedMotion || advancers.length === 0) {
+      return;
+    }
+    staggerTimer = window.setTimeout(runStagger, STAGGER_MS);
+  }
+
   function initCarousel(root) {
     var slides = root.querySelectorAll('.carousel-slide');
     var dots = root.querySelectorAll('.carousel-dot');
     var trigger = root.querySelector('.carousel-trigger');
     var index = 0;
-    var timer = null;
 
     function show(next) {
       index = (next + slides.length) % slides.length;
@@ -273,28 +319,20 @@
       });
     }
 
-    function stop() {
-      if (timer) {
-        window.clearInterval(timer);
-        timer = null;
-      }
-    }
-
-    function start() {
-      stop();
-      if (prefersReducedMotion || slides.length < 2) {
-        return;
-      }
-      timer = window.setInterval(function () {
-        show(index + 1);
-      }, AUTOPLAY_MS);
-    }
+    var advance = function () {
+      show(index + 1);
+    };
 
     dots.forEach(function (dot, n) {
       dot.addEventListener('click', function (event) {
         event.stopPropagation();
         show(n);
-        start();
+        // Drop any queued auto-advance for this box so a manual pick doesn't
+        // get immediately followed by an automatic one.
+        var queued = advanceQueue.indexOf(advance);
+        if (queued !== -1) {
+          advanceQueue.splice(queued, 1);
+        }
       });
     });
 
@@ -302,8 +340,11 @@
       openLightbox(root, index);
     });
 
-    start();
+    if (slides.length > 1) {
+      advancers.push(advance);
+    }
   }
 
   document.querySelectorAll('[data-carousel]').forEach(initCarousel);
+  startStagger();
 })();

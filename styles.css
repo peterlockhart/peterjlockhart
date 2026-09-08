@@ -81,6 +81,12 @@ body {
   grid-row: span 2;
 }
 
+.box--social {
+  container-type: inline-size;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 899px) {
   .bento {
     grid-template-columns: repeat(2, 1fr);
@@ -118,8 +124,10 @@ body {
 
 .social-icons {
   display: flex;
-  gap: 0.9rem;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 4cqw, 2rem);
   align-items: center;
+  justify-content: center;
 }
 
 .social-icons a {
@@ -132,8 +140,9 @@ body {
 }
 
 .social-icons svg {
-  width: 26px;
-  height: 26px;
+  width: clamp(24px, 9cqw, 50px);
+  height: clamp(24px, 9cqw, 50px);
+  flex-shrink: 0;
 }
 
 .box-link {
