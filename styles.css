@@ -102,3 +102,23 @@ body {
   color: var(--text-muted);
   line-height: 1.5;
 }
+
+.social-icons {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.social-icons a {
+  color: var(--text);
+  display: inline-flex;
+}
+
+.social-icons a:hover {
+  color: var(--accent);
+}
+
+.social-icons svg {
+  width: 26px;
+  height: 26px;
+}
