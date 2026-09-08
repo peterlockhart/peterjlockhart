@@ -517,7 +517,7 @@ grep -q 'href="https://sparrowsleeps.com"' index.html && echo "sparrow sleeps ok
 grep -q 'href="https://fox.io"' index.html && echo "foxio ok"
 grep -c '<h2>' index.html
 ```
-Expected: `10` boxes total, both link lines print, and `8` `<h2>` headings (Social, Family, Sparrow Sleeps, Foxio, Illustration, Branding, Woodworking, Welding, Home Renovations minus... — count check: Social, Family, Sparrow Sleeps, Foxio, Illustration, Branding, Woodworking, Welding, Home Renovations = 9 `<h2>`, About uses `<h1>`). Expected `<h2>` count is `9`.
+Expected: `10` boxes total, both link lines print, and `9` `<h2>` headings (Social, Family, Sparrow Sleeps, Foxio, Illustration, Branding, Woodworking, Welding, Home Renovations — the About box uses `<h1>` instead, so it's not counted here).
 
 - [ ] **Step 4: Commit**
 
