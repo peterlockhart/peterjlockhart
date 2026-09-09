@@ -136,6 +136,16 @@
     el.style.opacity = String(opacity);
   }
 
+  // Carousel slides (both the box's and the lightbox's) start with only a
+  // data-src so unvisited slides never fetch. This resolves one to its real
+  // src the first time it's needed; already-resolved slides (including the
+  // one slide per carousel that ships with a real src) are a no-op.
+  function resolveSlideSrc(img) {
+    if (img && !img.getAttribute('src') && img.dataset.src) {
+      img.src = img.dataset.src;
+    }
+  }
+
   // Purely a DOM-sync helper: renders the given (already-resolved) index into
   // the lightbox's slides/dots. The box carousel itself is the single source
   // of truth for "which slide is current" — see initCarousel's show().
@@ -149,6 +159,11 @@
     slides.forEach(function (slide, n) {
       slide.classList.toggle('is-active', n === resolved);
     });
+    resolveSlideSrc(slides[resolved]);
+    if (slides.length > 1) {
+      // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
+      resolveSlideSrc(slides[(resolved + 1) % slides.length]);
+    }
     dots.forEach(function (dot, n) {
       dot.classList.toggle('is-active', n === resolved);
     });
@@ -245,8 +260,14 @@
     boxSlides.forEach(function (slide, n) {
       var img = document.createElement('img');
       img.className = 'lightbox-slide';
-      img.src = slide.src;
       img.alt = slide.alt;
+      // Only the slide being opened into fetches immediately — the rest carry
+      // data-src and resolve lazily via showLightboxSlide as they're navigated to.
+      if (n === startIndex) {
+        img.src = slide.dataset.src;
+      } else {
+        img.dataset.src = slide.dataset.src;
+      }
       lightboxSlides.appendChild(img);
 
       var dot = document.createElement('button');
@@ -497,6 +518,11 @@
       slides.forEach(function (slide, n) {
         slide.classList.toggle('is-active', n === index);
       });
+      resolveSlideSrc(slides[index]);
+      if (slides.length > 1) {
+        // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
+        resolveSlideSrc(slides[(index + 1) % slides.length]);
+      }
       dots.forEach(function (dot, n) {
         dot.classList.toggle('is-active', n === index);
       });
@@ -538,6 +564,11 @@
     if (slides.length > 1) {
       advancers.push(advance);
     }
+
+    // Resolves the initially-active slide (a no-op, it already has a real
+    // src) and prefetches the second slide so the first auto-advance/dot
+    // click doesn't show a blank frame.
+    show(0);
   }
 
   document.querySelectorAll('[data-carousel]').forEach(initCarousel);
