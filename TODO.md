@@ -10,10 +10,6 @@
 - Write short bio
 - Add content to pets box
 - Add content to peterandconsuelo box
-- Add a Spokenote box
-- Add an [iconshavefeelingstoo.com](https://iconshavefeelingstoo.com/) box with a white background and black text.
-- Add [hendogisforever.net](https://thehendogisforever.net/) box with a #28448e background and white text
-- Add a guitar building box with a carousel
 
 
 # IDEAS AND CONSIDERATIONS
@@ -21,6 +17,9 @@
 - Use the same CSS styling for slide border radius from the peterandconsuelo repo (no border radius when the image touches the viewport sides)
 - Loading throbber to preload images/fonts
 - Add a setting so that the box carousel is cover or contain. The default should be cover. 
+- Add a Spokenote box
+- Add a guitar building box with a carousel
+- Add an electronics box that features the Sparrow Sleeps kiosk, guitar pedal, etc.
 
 
 # DONE
@@ -39,3 +38,5 @@
 - Add Google Analytics
 - Animate the boxes in using CSS sibling-index()
 - Make the carousel transition to/from fullscreen feel like a single image is transitioning to fullscreen and back, not that there are two images. To do this, make the box version of the image hidden while the copy that transitions to fullscreen is the visible representation of that image. You should still see the subtle outline of the "empty" box while the carousel slide is transitioning.
+- Add [hendogisforever.net](https://thehendogisforever.net/) box with a #28448e background and white text
+- Add an [iconshavefeelingstoo.com](https://iconshavefeelingstoo.com/) box with a white background and black text.

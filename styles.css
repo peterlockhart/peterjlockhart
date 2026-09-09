@@ -600,6 +600,21 @@ body.lightbox-open {
   text-decoration: underline;
 }
 
+.box[data-name="iconshavefeelingstoo"] {
+  background: #ffffff;
+  border-color: transparent;
+}
+
+.box[data-name="iconshavefeelingstoo"] h2,
+.box[data-name="iconshavefeelingstoo"] p,
+.box[data-name="iconshavefeelingstoo"] .box-link {
+  color: #000000;
+}
+
+.box[data-name="iconshavefeelingstoo"] .box-link {
+  text-decoration: underline;
+}
+
 .site-footer {
   max-width: 1600px;
   margin: 1.5rem auto 0;
