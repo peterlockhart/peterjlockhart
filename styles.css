@@ -344,14 +344,23 @@ body {
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-  opacity: 0;
   pointer-events: none;
 }
 
 .lightbox.is-visible {
-  opacity: 1;
   pointer-events: auto;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg);
+  opacity: 0;
+}
+
+.lightbox.is-visible .lightbox-backdrop {
+  opacity: 1;
 }
 
 .lightbox[hidden] {
