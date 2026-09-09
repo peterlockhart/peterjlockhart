@@ -80,8 +80,8 @@
   var lightbox = document.getElementById('lightbox');
   lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
   var lightboxSlides = document.getElementById('lightbox-slides');
-  var lightboxDots = document.getElementById('lightbox-dots');
-  var lightboxCaption = document.getElementById('lightbox-caption');
+  var lightboxThumbsTrack = document.getElementById('lightbox-thumbs');
+  var lightboxTitle = document.getElementById('lightbox-title');
   var lightboxClose = document.getElementById('lightbox-close');
   var lightboxPrev = document.getElementById('lightbox-prev');
   var lightboxNext = document.getElementById('lightbox-next');
@@ -151,7 +151,6 @@
   // of truth for "which slide is current" — see initCarousel's show().
   function showLightboxSlide(index) {
     var slides = lightboxSlides.querySelectorAll('img');
-    var dots = lightboxDots.querySelectorAll('button');
     if (!slides.length) {
       return;
     }
@@ -164,9 +163,6 @@
       // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
       resolveSlideSrc(slides[(resolved + 1) % slides.length]);
     }
-    dots.forEach(function (dot, n) {
-      dot.classList.toggle('is-active', n === resolved);
-    });
   }
 
   // Navigating in the lightbox always goes through the underlying box's own
@@ -245,7 +241,6 @@
     var sourceImg = boxSlides[startIndex];
     var startRect = sourceImg ? sourceImg.getBoundingClientRect() : null;
     var title = root.querySelector('h2');
-    var description = root.querySelector('p');
     var boxCaption = root.querySelector('.carousel-caption');
     var boxDots = root.querySelector('.carousel-dots');
 
@@ -255,7 +250,6 @@
     setFadeOpacity(boxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     lightboxSlides.innerHTML = '';
-    lightboxDots.innerHTML = '';
 
     boxSlides.forEach(function (slide, n) {
       var img = document.createElement('img');
@@ -269,38 +263,17 @@
         img.dataset.src = slide.dataset.src;
       }
       lightboxSlides.appendChild(img);
-
-      var dot = document.createElement('button');
-      dot.type = 'button';
-      dot.className = 'lightbox-dot';
-      dot.setAttribute('aria-label', 'Slide ' + (n + 1));
-      dot.addEventListener('click', function (event) {
-        event.stopPropagation();
-        goToLightboxSlide(n);
-        startLightboxAutoplay();
-      });
-      lightboxDots.appendChild(dot);
     });
 
     lightboxPrev.hidden = boxSlides.length < 2;
     lightboxNext.hidden = boxSlides.length < 2;
 
-    lightboxCaption.innerHTML = '';
-    if (title) {
-      var h2 = document.createElement('h2');
-      h2.textContent = title.textContent;
-      lightboxCaption.appendChild(h2);
-    }
-    if (description) {
-      var p = document.createElement('p');
-      p.textContent = description.textContent;
-      lightboxCaption.appendChild(p);
-    }
+    lightboxTitle.textContent = title ? title.textContent : '';
     // Stay invisible until the image finishes scaling up to fullscreen (see
-    // the fade-in scheduled below) — otherwise they pop in at full size while
-    // the image is still small, looking like unrelated things loading in.
-    setFadeOpacity(lightboxCaption, 0, 0);
-    setFadeOpacity(lightboxDots, 0, 0);
+    // the fade-in scheduled below) — otherwise it pops in at full size while
+    // the image is still small, looking like an unrelated thing loading in.
+    setFadeOpacity(lightboxTitle, 0, 0);
+    setFadeOpacity(lightboxThumbsTrack, 0, 0);
 
     activeCarouselRoot = root;
     pauseBoxAutoplay(root);
@@ -341,8 +314,8 @@
 
     if (prefersReducedMotion) {
       startLightboxAutoplay();
-      setFadeOpacity(lightboxCaption, 1, 0);
-      setFadeOpacity(lightboxDots, 1, 0);
+      setFadeOpacity(lightboxTitle, 1, 0);
+      setFadeOpacity(lightboxThumbsTrack, 1, 0);
     } else {
       pendingTransitionTimeout = window.setTimeout(function () {
         if (targetImg) {
@@ -351,8 +324,8 @@
         pendingTransitionTimeout = null;
         startLightboxAutoplay();
         pendingCaptionTimeout = window.setTimeout(function () {
-          setFadeOpacity(lightboxCaption, 1, CAPTION_FADE_IN_MS);
-          setFadeOpacity(lightboxDots, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(lightboxTitle, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(lightboxThumbsTrack, 1, CAPTION_FADE_IN_MS);
           pendingCaptionTimeout = null;
         }, CAPTION_FADE_IN_DELAY_MS);
       }, TRANSITION_MS);
@@ -392,8 +365,8 @@
 
     lightbox.classList.remove('is-visible');
     // Fade out immediately, independent of the image's FLIP animation below.
-    setFadeOpacity(lightboxCaption, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
-    setFadeOpacity(lightboxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxTitle, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxThumbsTrack, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;

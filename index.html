@@ -251,21 +251,25 @@
   </main>
   <footer class="site-footer">&copy; <span id="copyright-year">2026</span> Peter Lockhart.</footer>
   <div class="lightbox" id="lightbox" hidden>
-    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close fullscreen gallery">&times;</button>
-    <button type="button" class="lightbox-nav lightbox-nav--prev" id="lightbox-prev" aria-label="Previous slide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-    </button>
-    <button type="button" class="lightbox-nav lightbox-nav--next" id="lightbox-next" aria-label="Next slide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
-    </button>
-    <div class="lightbox-inner" id="lightbox-inner">
+    <div class="lightbox-header">
+      <h2 class="lightbox-title" id="lightbox-title"></h2>
+      <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close fullscreen gallery">&times;</button>
+    </div>
+    <div class="lightbox-stage" id="lightbox-inner">
       <div class="lightbox-slides" id="lightbox-slides"></div>
-      <div class="lightbox-caption" id="lightbox-caption"></div>
-      <div class="lightbox-dots" id="lightbox-dots"></div>
+      <button type="button" class="lightbox-nav lightbox-nav--prev" id="lightbox-prev" aria-label="Previous slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button type="button" class="lightbox-nav lightbox-nav--next" id="lightbox-next" aria-label="Next slide">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+    <div class="lightbox-thumbs">
+      <ul class="lightbox-thumbs-track" id="lightbox-thumbs" aria-label="Choose a photo"></ul>
     </div>
   </div>
   <script src="script.js" defer></script>
