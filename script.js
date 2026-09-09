@@ -72,7 +72,10 @@
     updateToggleLabel();
   }
 
-  var TRANSITION_MS = 1000;
+  var TRANSITION_MS = 500;
+  var CAPTION_FADE_OUT_MS = 100;
+  var CAPTION_FADE_IN_DELAY_MS = 100;
+  var CAPTION_FADE_IN_MS = 250;
 
   var lightbox = document.getElementById('lightbox');
   lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
@@ -87,6 +90,7 @@
   var lastTrigger = null;
   var activeCarouselRoot = null;
   var pendingTransitionTimeout = null;
+  var pendingCaptionTimeout = null;
   var closingLightbox = false;
 
   var RECT_TRANSITION_PROPS = ['width', 'height', 'top', 'left'];
@@ -118,6 +122,18 @@
     el.style.top = '';
     el.style.width = '';
     el.style.height = '';
+  }
+
+  // Used for the caption and dots on both the box and the lightbox. They never
+  // crossfade against each other — one is always fully faded out before the
+  // other starts fading in — so a plain opacity tween (no FLIP trick) is
+  // enough. `ms` of 0/falsy snaps to the value instantly.
+  function setFadeOpacity(el, opacity, ms) {
+    if (!el) {
+      return;
+    }
+    el.style.transition = ms ? 'opacity ' + ms + 'ms ease' : 'none';
+    el.style.opacity = String(opacity);
   }
 
   // Purely a DOM-sync helper: renders the given (already-resolved) index into
@@ -194,10 +210,19 @@
       window.clearTimeout(pendingTransitionTimeout);
       pendingTransitionTimeout = null;
     }
+    if (pendingCaptionTimeout) {
+      window.clearTimeout(pendingCaptionTimeout);
+      pendingCaptionTimeout = null;
+    }
     if (activeCarouselRoot && activeCarouselRoot !== root) {
       // A previous carousel's close sequence never got to finish (interrupted
-      // by opening a different one) — don't leave its autoplay paused forever.
+      // by opening a different one) — don't leave its autoplay paused forever,
+      // and let its own image, caption, and dots show again since it's no
+      // longer behind the lightbox.
       resumeBoxAutoplay(activeCarouselRoot);
+      activeCarouselRoot.classList.remove('is-lightbox-active');
+      setFadeOpacity(activeCarouselRoot.querySelector('.carousel-caption'), 1, 0);
+      setFadeOpacity(activeCarouselRoot.querySelector('.carousel-dots'), 1, 0);
     }
     closingLightbox = false;
 
@@ -206,6 +231,13 @@
     var startRect = sourceImg ? sourceImg.getBoundingClientRect() : null;
     var title = root.querySelector('h2');
     var description = root.querySelector('p');
+    var boxCaption = root.querySelector('.carousel-caption');
+    var boxDots = root.querySelector('.carousel-dots');
+
+    // The box's own caption and dots fade out immediately — independent of the
+    // image's FLIP animation below — so they never appear frozen mid-transition.
+    setFadeOpacity(boxCaption, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(boxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     lightboxSlides.innerHTML = '';
     lightboxDots.innerHTML = '';
@@ -243,10 +275,19 @@
       p.textContent = description.textContent;
       lightboxCaption.appendChild(p);
     }
+    // Stay invisible until the image finishes scaling up to fullscreen (see
+    // the fade-in scheduled below) — otherwise they pop in at full size while
+    // the image is still small, looking like unrelated things loading in.
+    setFadeOpacity(lightboxCaption, 0, 0);
+    setFadeOpacity(lightboxDots, 0, 0);
 
     activeCarouselRoot = root;
     pauseBoxAutoplay(root);
     lastTrigger = root.querySelector('.carousel-trigger');
+    // Hide the box's own carousel for the duration of the lightbox so only the
+    // transitioning copy is ever visible — otherwise the two overlap while the
+    // backdrop is still fading in/out, reading as two images instead of one.
+    root.classList.add('is-lightbox-active');
     lightbox.hidden = false;
     document.body.classList.add('lightbox-open');
 
@@ -279,6 +320,8 @@
 
     if (prefersReducedMotion) {
       startLightboxAutoplay();
+      setFadeOpacity(lightboxCaption, 1, 0);
+      setFadeOpacity(lightboxDots, 1, 0);
     } else {
       pendingTransitionTimeout = window.setTimeout(function () {
         if (targetImg) {
@@ -286,6 +329,11 @@
         }
         pendingTransitionTimeout = null;
         startLightboxAutoplay();
+        pendingCaptionTimeout = window.setTimeout(function () {
+          setFadeOpacity(lightboxCaption, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(lightboxDots, 1, CAPTION_FADE_IN_MS);
+          pendingCaptionTimeout = null;
+        }, CAPTION_FADE_IN_DELAY_MS);
       }, TRANSITION_MS);
     }
 
@@ -298,6 +346,9 @@
     lightbox.hidden = true;
     document.body.classList.remove('lightbox-open');
     resumeBoxAutoplay(activeCarouselRoot);
+    if (activeCarouselRoot) {
+      activeCarouselRoot.classList.remove('is-lightbox-active');
+    }
     activeCarouselRoot = null;
     if (lastTrigger) {
       lastTrigger.focus();
@@ -313,12 +364,25 @@
       window.clearTimeout(pendingTransitionTimeout);
       pendingTransitionTimeout = null;
     }
+    if (pendingCaptionTimeout) {
+      window.clearTimeout(pendingCaptionTimeout);
+      pendingCaptionTimeout = null;
+    }
 
     lightbox.classList.remove('is-visible');
+    // Fade out immediately, independent of the image's FLIP animation below.
+    setFadeOpacity(lightboxCaption, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;
     var endRect = targetImg ? targetImg.getBoundingClientRect() : null;
+    var boxCaption = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-caption') : null;
+    var boxDots = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-dots') : null;
+    // Already invisible (box is still hidden) — this just guarantees they start
+    // from 0 once the box reappears, so the fade-in below has something to do.
+    setFadeOpacity(boxCaption, 0, 0);
+    setFadeOpacity(boxDots, 0, 0);
 
     if (activeImg && endRect && endRect.width && endRect.height && !prefersReducedMotion) {
       activeImg.style.transition = RECT_TRANSITION_PROPS.map(function (prop) {
@@ -329,9 +393,18 @@
 
     if (prefersReducedMotion) {
       finishClose();
+      setFadeOpacity(boxCaption, 1, 0);
+      setFadeOpacity(boxDots, 1, 0);
     } else {
       closingLightbox = true;
-      pendingTransitionTimeout = window.setTimeout(finishClose, TRANSITION_MS);
+      pendingTransitionTimeout = window.setTimeout(function () {
+        finishClose();
+        pendingCaptionTimeout = window.setTimeout(function () {
+          setFadeOpacity(boxCaption, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(boxDots, 1, CAPTION_FADE_IN_MS);
+          pendingCaptionTimeout = null;
+        }, CAPTION_FADE_IN_DELAY_MS);
+      }, TRANSITION_MS);
     }
   }
 

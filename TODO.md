@@ -1,7 +1,6 @@
 # TODO
 
 - Select and include custom web fonts
-- Animate the boxes in using CSS sibling-index()
 - Add Google Analytics event tracking for each bento box interaction
 - Add open graph image
 - Add Favicon
@@ -11,12 +10,17 @@
 - Write short bio
 - Add content to pets box
 - Add content to peterandconsuelo box
+- Add a Spokenote box
+- Add an [iconshavefeelingstoo.com](https://iconshavefeelingstoo.com/) box with a white background and black text.
+- Add [hendogisforever.net](https://thehendogisforever.net/) box with a #28448e background and white text
+- Add a guitar building box with a carousel
 
 
 # IDEAS AND CONSIDERATIONS
 
 - Use the same CSS styling for slide border radius from the peterandconsuelo repo (no border radius when the image touches the viewport sides)
 - Loading throbber to preload images/fonts
+- Add a setting so that the box carousel is cover or contain. The default should be cover. 
 
 
 # DONE
@@ -33,3 +37,5 @@
 - Add link to peterandconsuelo.com in the Family box
 - Add Open Graph and Twitter Card meta tags
 - Add Google Analytics
+- Animate the boxes in using CSS sibling-index()
+- Make the carousel transition to/from fullscreen feel like a single image is transitioning to fullscreen and back, not that there are two images. To do this, make the box version of the image hidden while the copy that transitions to fullscreen is the visible representation of that image. You should still see the subtle outline of the "empty" box while the carousel slide is transitioning.

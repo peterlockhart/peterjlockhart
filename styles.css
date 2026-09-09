@@ -4,6 +4,7 @@
   color-scheme: light dark;
   --bg: #e9e9e7;
   --surface: #ffffff;
+  --surface-inverse: #1d2025;
   --text: #1a1a1a;
   --text-muted: #5a5a5a;
   --border: #e2e0da;
@@ -18,6 +19,7 @@
   :root:not([data-theme="light"]) {
     --bg: #14161a;
     --surface: #1d2025;
+    --surface-inverse: #ffffff;
     --text: #f2f1ee;
     --text-muted: #a8a8a8;
     --border: #2c2f36;
@@ -29,6 +31,7 @@
 :root[data-theme="dark"] {
   --bg: #14161a;
   --surface: #1d2025;
+  --surface-inverse: #ffffff;
   --text: #f2f1ee;
   --text-muted: #a8a8a8;
   --border: #2c2f36;
@@ -242,6 +245,21 @@ body {
 .carousel-slide.is-active {
   opacity: 1;
   z-index: 1;
+}
+
+.carousel.is-lightbox-active {
+  visibility: hidden;
+}
+
+.carousel.is-lightbox-active .carousel-caption,
+.carousel.is-lightbox-active .carousel-dots {
+  /* Overrides the inherited hidden state so their own opacity fade (driven by
+     script.js) can still render while the image stays fully hidden. */
+  visibility: visible;
+}
+
+.box--carousel:has(.carousel.is-lightbox-active) {
+  background: var(--surface-inverse);
 }
 
 .carousel-caption {
