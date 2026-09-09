@@ -41,3 +41,4 @@
 - Add [hendogisforever.net](https://thehendogisforever.net/) box with a #28448e background and white text
 - Add an [iconshavefeelingstoo.com](https://iconshavefeelingstoo.com/) box with a white background and black text.
 - Lazy load the images
+- For the 5 boxes with external text links, make sure they all have the same utm parameter that peterandconsuelo.com have. Then add an SVG arrow pointing right to the right of the text. On hover, give a subtle ~5px slide to the right for that arrow. 

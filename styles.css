@@ -187,6 +187,7 @@ body {
   gap: clamp(0.75rem, 4cqw, 2rem);
   align-items: center;
   justify-content: flex-start;
+  margin-top: 10px;
 }
 
 .social-icons a {
@@ -205,14 +206,25 @@ body {
 }
 
 .box-link {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   margin-top: auto;
 }
 
-.box-link:hover {
-  text-decoration: underline;
+.box-link-arrow {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.box-link:hover .box-link-arrow {
+  transform: translateX(5px);
 }
 
 .box--carousel {
@@ -584,10 +596,6 @@ body.lightbox-open {
   color: #fff;
 }
 
-.box[data-name="foxio"] .box-link {
-  text-decoration: underline;
-}
-
 .box[data-name="sparrow-sleeps"] {
   background: #4fbc83;
   border-color: transparent;
@@ -597,10 +605,6 @@ body.lightbox-open {
 .box[data-name="sparrow-sleeps"] p,
 .box[data-name="sparrow-sleeps"] .box-link {
   color: #fff;
-}
-
-.box[data-name="sparrow-sleeps"] .box-link {
-  text-decoration: underline;
 }
 
 .box[data-name="hendogisforever"] {
@@ -614,10 +618,6 @@ body.lightbox-open {
   color: #fff;
 }
 
-.box[data-name="hendogisforever"] .box-link {
-  text-decoration: underline;
-}
-
 .box[data-name="iconshavefeelingstoo"] {
   background: #ffffff;
   border-color: transparent;
@@ -627,10 +627,6 @@ body.lightbox-open {
 .box[data-name="iconshavefeelingstoo"] p,
 .box[data-name="iconshavefeelingstoo"] .box-link {
   color: #000000;
-}
-
-.box[data-name="iconshavefeelingstoo"] .box-link {
-  text-decoration: underline;
 }
 
 .site-footer {
