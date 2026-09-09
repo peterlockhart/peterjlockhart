@@ -98,7 +98,7 @@
   var pendingCaptionTimeout = null;
   var closingLightbox = false;
 
-  var RECT_TRANSITION_PROPS = ['width', 'height', 'top', 'left'];
+  var SLIDE_TRANSITION_PROPS = ['width', 'height', 'top', 'left', 'border-radius'];
 
   // Converts a viewport rect (from getBoundingClientRect) into left/top/width/
   // height relative to `container`'s own box, suitable for inline styles on an
@@ -122,11 +122,44 @@
     el.style.height = rect.height + 'px';
   }
 
-  function clearRect(el) {
-    el.style.left = '';
-    el.style.top = '';
-    el.style.width = '';
-    el.style.height = '';
+  // Where object-fit: contain would render a photo of the given ratio inside
+  // a box of containerSize, as a rect relative to that box's own top-left.
+  // Sizing the slide's own box to exactly this (rather than letting it span
+  // the full stage, with contain centering the photo inside the extra space)
+  // is what makes border-radius visibly round the photo's real corners —
+  // radius on a box bigger than its visible content only ever clips already-
+  // transparent space near the box's corners, never the photo itself.
+  function computeContentRect(containerSize, ratio) {
+    if (!ratio || !isFinite(ratio)) {
+      return { left: 0, top: 0, width: containerSize.width, height: containerSize.height };
+    }
+    var width, height;
+    if (containerSize.width / containerSize.height > ratio) {
+      height = containerSize.height;
+      width = height * ratio;
+    } else {
+      width = containerSize.width;
+      height = width / ratio;
+    }
+    return {
+      left: (containerSize.width - width) / 2,
+      top: (containerSize.height - height) / 2,
+      width: width,
+      height: height
+    };
+  }
+
+  // Sizes a lightbox slide to exactly where its photo renders within the
+  // stage (see computeContentRect) — the box-radius clamp in styles.css
+  // depends on this to have a real effect. Safe to call any time the slide
+  // is showing: same math whether or not the stage size just changed.
+  function sizeSlideToContent(img) {
+    if (!img) {
+      return;
+    }
+    var ratio = parseFloat(img.style.getPropertyValue('--ratio'));
+    var stageRect = lightboxInner.getBoundingClientRect();
+    applyRect(img, computeContentRect({ width: stageRect.width, height: stageRect.height }, ratio));
   }
 
   // Used for the caption and dots on both the box and the lightbox. They never
@@ -148,6 +181,18 @@
   function resolveSlideSrc(img) {
     if (img && !img.getAttribute('src') && img.dataset.src) {
       img.src = img.dataset.src;
+    }
+  }
+
+  // Feeds the lightbox-slide's conditional border-radius (styles.css). Best
+  // guess up front from the box's own (usually already-loaded) copy of this
+  // photo, corrected once the lightbox's own copy actually loads — CSS
+  // recomputes the clamp automatically the instant the custom property changes.
+  function setSlideRatio(img, sourceImg) {
+    var w = sourceImg && sourceImg.naturalWidth;
+    var h = sourceImg && sourceImg.naturalHeight;
+    if (w && h) {
+      img.style.setProperty('--ratio', String(w / h));
     }
   }
 
@@ -191,6 +236,10 @@
       // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
       resolveSlideSrc(slides[(resolved + 1) % slides.length]);
     }
+    // Navigating while already open (no FLIP in progress) — each slide can
+    // have a different photo ratio, so re-fit it to the stage every time it
+    // becomes active.
+    sizeSlideToContent(slides[resolved]);
     thumbs.forEach(function (thumb, n) {
       if (n === resolved) {
         thumb.setAttribute('aria-current', 'true');
@@ -292,6 +341,10 @@
       var img = document.createElement('img');
       img.className = 'lightbox-slide';
       img.alt = slide.alt;
+      setSlideRatio(img, slide);
+      img.addEventListener('load', function () {
+        setSlideRatio(img, img);
+      });
       // Only the slide being opened into fetches immediately — the rest carry
       // data-src and resolve lazily via showLightboxSlide as they're navigated to.
       if (n === startIndex) {
@@ -353,6 +406,10 @@
     var shouldAnimate = Boolean(targetImg && startRect && startRect.width && startRect.height && !prefersReducedMotion);
     if (shouldAnimate) {
       applyRect(targetImg, rectRelativeTo(startRect, lightboxInner));
+      // Start at the box's own radius, matching how it looked a moment ago —
+      // clearing it below lets it animate to this photo's fullscreen radius
+      // (0 if it'll span the stage's full width, var(--radius) otherwise).
+      targetImg.style.borderRadius = 'var(--radius)';
     } else if (targetImg) {
       targetImg.style.transition = '';
     }
@@ -364,10 +421,11 @@
 
     lightbox.classList.add('is-visible');
     if (shouldAnimate) {
-      targetImg.style.transition = RECT_TRANSITION_PROPS.map(function (prop) {
+      targetImg.style.transition = SLIDE_TRANSITION_PROPS.map(function (prop) {
         return prop + ' ' + TRANSITION_MS + 'ms ease';
       }).join(', ');
-      clearRect(targetImg);
+      sizeSlideToContent(targetImg);
+      targetImg.style.borderRadius = '';
     }
 
     if (prefersReducedMotion) {
@@ -437,10 +495,13 @@
     setFadeOpacity(boxDots, 0, 0);
 
     if (activeImg && endRect && endRect.width && endRect.height && !prefersReducedMotion) {
-      activeImg.style.transition = RECT_TRANSITION_PROPS.map(function (prop) {
+      activeImg.style.transition = SLIDE_TRANSITION_PROPS.map(function (prop) {
         return prop + ' ' + TRANSITION_MS + 'ms ease';
       }).join(', ');
       applyRect(activeImg, rectRelativeTo(endRect, lightboxInner));
+      // Animate from whatever this photo currently shows in fullscreen (0 or
+      // var(--radius), per the clamp in styles.css) to the box's own radius.
+      activeImg.style.borderRadius = 'var(--radius)';
     }
 
     if (prefersReducedMotion) {
@@ -461,6 +522,15 @@
   }
 
   lightboxClose.addEventListener('click', closeLightbox);
+
+  // sizeSlideToContent snapshots a pixel rect rather than using a live
+  // percentage, so — unlike the plain 100%/100% box it replaced — it needs
+  // an explicit refresh if the viewport resizes while the lightbox is open.
+  window.addEventListener('resize', function () {
+    if (!lightbox.hidden) {
+      sizeSlideToContent(lightboxSlides.querySelector('.lightbox-slide.is-active'));
+    }
+  });
 
   function currentLightboxIndex() {
     return activeCarouselRoot && activeCarouselRoot._carouselIndex ? activeCarouselRoot._carouselIndex() : 0;

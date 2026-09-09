@@ -4,12 +4,12 @@
 - Add Google Analytics event tracking for each bento box interaction
 - Add open graph image
 - Add Favicon
-- Lazy load the images
 - Update the social icons to better SVGs
 - Collect assets for each carousel
 - Write short bio
 - Add content to pets box
 - Add content to peterandconsuelo box
+- The fullscreen background overlay should respect the dark/light mode setting. The text and close button will need to adjust to this background color setting as well.
 
 
 # IDEAS AND CONSIDERATIONS
@@ -40,3 +40,4 @@
 - Make the carousel transition to/from fullscreen feel like a single image is transitioning to fullscreen and back, not that there are two images. To do this, make the box version of the image hidden while the copy that transitions to fullscreen is the visible representation of that image. You should still see the subtle outline of the "empty" box while the carousel slide is transitioning.
 - Add [hendogisforever.net](https://thehendogisforever.net/) box with a #28448e background and white text
 - Add an [iconshavefeelingstoo.com](https://iconshavefeelingstoo.com/) box with a white background and black text.
+- Lazy load the images

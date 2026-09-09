@@ -397,6 +397,7 @@ body.lightbox-open {
   position: relative;
   flex: 1;
   min-height: 0;
+  container-type: size;
 }
 
 .lightbox-slides {
@@ -412,6 +413,12 @@ body.lightbox-open {
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.6s ease;
+  /* Rounded unless this photo's aspect ratio makes it span the stage's full
+     width (touching the left/right edges) — then flush corners read better
+     against the viewport edge. `--ratio` (naturalWidth/naturalHeight) is set
+     per slide in script.js. The (…)*1e5 saturates the clamp to exactly 0 or
+     --radius — there's no meaningful in-between value. */
+  border-radius: clamp(0px, (100cqi - 100cqb * var(--ratio, 1)) * 1e5, var(--radius));
 }
 
 .lightbox-slide.is-active {
