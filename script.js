@@ -151,6 +151,7 @@
   // of truth for "which slide is current" — see initCarousel's show().
   function showLightboxSlide(index) {
     var slides = lightboxSlides.querySelectorAll('img');
+    var thumbs = lightboxThumbsTrack.querySelectorAll('button');
     if (!slides.length) {
       return;
     }
@@ -162,6 +163,17 @@
     if (slides.length > 1) {
       // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
       resolveSlideSrc(slides[(resolved + 1) % slides.length]);
+    }
+    thumbs.forEach(function (thumb, n) {
+      if (n === resolved) {
+        thumb.setAttribute('aria-current', 'true');
+      } else {
+        thumb.removeAttribute('aria-current');
+      }
+    });
+    resolveSlideSrc(thumbs[resolved] && thumbs[resolved].querySelector('img'));
+    if (thumbs.length > 1) {
+      resolveSlideSrc(thumbs[(resolved + 1) % thumbs.length] && thumbs[(resolved + 1) % thumbs.length].querySelector('img'));
     }
   }
 
@@ -250,6 +262,7 @@
     setFadeOpacity(boxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     lightboxSlides.innerHTML = '';
+    lightboxThumbsTrack.innerHTML = '';
 
     boxSlides.forEach(function (slide, n) {
       var img = document.createElement('img');
@@ -263,6 +276,31 @@
         img.dataset.src = slide.dataset.src;
       }
       lightboxSlides.appendChild(img);
+
+      var thumbImg = document.createElement('img');
+      thumbImg.alt = '';
+      thumbImg.loading = 'lazy';
+      thumbImg.decoding = 'async';
+      if (n === startIndex) {
+        thumbImg.src = slide.dataset.src;
+      } else {
+        thumbImg.dataset.src = slide.dataset.src;
+      }
+
+      var thumbButton = document.createElement('button');
+      thumbButton.type = 'button';
+      thumbButton.setAttribute('aria-label', 'Photo ' + (n + 1) + ' of ' + boxSlides.length);
+      thumbButton.appendChild(thumbImg);
+      thumbButton.addEventListener('click', function (event) {
+        event.stopPropagation();
+        goToLightboxSlide(n);
+        startLightboxAutoplay();
+      });
+
+      var thumbItem = document.createElement('li');
+      thumbItem.className = 'lightbox-thumb';
+      thumbItem.appendChild(thumbButton);
+      lightboxThumbsTrack.appendChild(thumbItem);
     });
 
     lightboxPrev.hidden = boxSlides.length < 2;
