@@ -199,8 +199,8 @@ body {
 }
 
 .social-icons svg {
-  width: clamp(24px, 9cqw, 40px);
-  height: clamp(24px, 9cqw, 40px);
+  width: clamp(24px, 9cqw, 30px);
+  height: clamp(24px, 9cqw, 30px);
   flex-shrink: 0;
 }
 
@@ -582,6 +582,21 @@ body.lightbox-open {
 }
 
 .box[data-name="sparrow-sleeps"] .box-link {
+  text-decoration: underline;
+}
+
+.box[data-name="hendogisforever"] {
+  background: #28448e;
+  border-color: transparent;
+}
+
+.box[data-name="hendogisforever"] h2,
+.box[data-name="hendogisforever"] p,
+.box[data-name="hendogisforever"] .box-link {
+  color: #fff;
+}
+
+.box[data-name="hendogisforever"] .box-link {
   text-decoration: underline;
 }
 
