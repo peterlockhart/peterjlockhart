@@ -76,11 +76,16 @@
   var CAPTION_FADE_OUT_MS = 100;
   var CAPTION_FADE_IN_DELAY_MS = 100;
   var CAPTION_FADE_IN_MS = 250;
+  var THUMB_QUIET_MS = 5000;
+  var lastThumbInteraction = 0;
 
   var lightbox = document.getElementById('lightbox');
   lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
   var lightboxSlides = document.getElementById('lightbox-slides');
   var lightboxThumbsTrack = document.getElementById('lightbox-thumbs');
+  lightboxThumbsTrack.addEventListener('wheel', markThumbInteraction);
+  lightboxThumbsTrack.addEventListener('touchmove', markThumbInteraction);
+  lightboxThumbsTrack.addEventListener('pointerdown', markThumbInteraction);
   var lightboxTitle = document.getElementById('lightbox-title');
   var lightboxClose = document.getElementById('lightbox-close');
   var lightboxPrev = document.getElementById('lightbox-prev');
@@ -146,10 +151,32 @@
     }
   }
 
+  function markThumbInteraction() {
+    lastThumbInteraction = Date.now();
+  }
+
+  // Keeps the active thumbnail visible as slides change. Autoplay-driven
+  // changes skip the auto-scroll if the visitor touched the strip in the
+  // last THUMB_QUIET_MS, so it doesn't get yanked out from under them while
+  // they're browsing thumbnails by hand.
+  function maybeScrollThumbIntoView(thumbButton, isAutoplayDriven) {
+    if (!thumbButton) {
+      return;
+    }
+    if (isAutoplayDriven && Date.now() - lastThumbInteraction < THUMB_QUIET_MS) {
+      return;
+    }
+    thumbButton.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      inline: 'center',
+      block: 'nearest'
+    });
+  }
+
   // Purely a DOM-sync helper: renders the given (already-resolved) index into
   // the lightbox's slides/dots. The box carousel itself is the single source
   // of truth for "which slide is current" — see initCarousel's show().
-  function showLightboxSlide(index) {
+  function showLightboxSlide(index, isAutoplayDriven) {
     var slides = lightboxSlides.querySelectorAll('img');
     var thumbs = lightboxThumbsTrack.querySelectorAll('button');
     if (!slides.length) {
@@ -175,14 +202,15 @@
     if (thumbs.length > 1) {
       resolveSlideSrc(thumbs[(resolved + 1) % thumbs.length] && thumbs[(resolved + 1) % thumbs.length].querySelector('img'));
     }
+    maybeScrollThumbIntoView(thumbs[resolved], isAutoplayDriven);
   }
 
   // Navigating in the lightbox always goes through the underlying box's own
   // show(), so the box (hidden behind the overlay) stays on the exact same
   // slide — closing the lightbox then always animates the matching image.
-  function goToLightboxSlide(index) {
+  function goToLightboxSlide(index, isAutoplayDriven) {
     if (activeCarouselRoot && activeCarouselRoot._carouselShow) {
-      activeCarouselRoot._carouselShow(index);
+      activeCarouselRoot._carouselShow(index, isAutoplayDriven);
     }
   }
 
@@ -200,7 +228,7 @@
     }
     lightboxTimer = window.setInterval(function () {
       if (activeCarouselRoot && activeCarouselRoot._carouselIndex) {
-        goToLightboxSlide(activeCarouselRoot._carouselIndex() + 1);
+        goToLightboxSlide(activeCarouselRoot._carouselIndex() + 1, true);
       }
     }, AUTOPLAY_MS);
   }
@@ -524,7 +552,7 @@
     var trigger = root.querySelector('.carousel-trigger');
     var index = 0;
 
-    function show(next) {
+    function show(next, isAutoplayDriven) {
       index = (next + slides.length) % slides.length;
       slides.forEach(function (slide, n) {
         slide.classList.toggle('is-active', n === index);
@@ -541,7 +569,7 @@
       // so the two never drift — closing always animates the slide the
       // visitor was just looking at.
       if (activeCarouselRoot === root) {
-        showLightboxSlide(index);
+        showLightboxSlide(index, isAutoplayDriven);
       }
     }
 
