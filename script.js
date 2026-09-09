@@ -80,7 +80,7 @@
   var lastThumbInteraction = 0;
 
   var lightbox = document.getElementById('lightbox');
-  lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
+  lightbox.style.transition = prefersReducedMotion ? 'none' : 'opacity ' + TRANSITION_MS + 'ms ease';
   var lightboxSlides = document.getElementById('lightbox-slides');
   var lightboxThumbsTrack = document.getElementById('lightbox-thumbs');
   lightboxThumbsTrack.addEventListener('wheel', markThumbInteraction, { passive: true });
