@@ -76,12 +76,17 @@
   var CAPTION_FADE_OUT_MS = 100;
   var CAPTION_FADE_IN_DELAY_MS = 100;
   var CAPTION_FADE_IN_MS = 250;
+  var THUMB_QUIET_MS = 5000;
+  var lastThumbInteraction = 0;
 
   var lightbox = document.getElementById('lightbox');
   lightbox.style.transition = prefersReducedMotion ? 'none' : 'background-color ' + TRANSITION_MS + 'ms ease';
   var lightboxSlides = document.getElementById('lightbox-slides');
-  var lightboxDots = document.getElementById('lightbox-dots');
-  var lightboxCaption = document.getElementById('lightbox-caption');
+  var lightboxThumbsTrack = document.getElementById('lightbox-thumbs');
+  lightboxThumbsTrack.addEventListener('wheel', markThumbInteraction, { passive: true });
+  lightboxThumbsTrack.addEventListener('touchmove', markThumbInteraction, { passive: true });
+  lightboxThumbsTrack.addEventListener('pointerdown', markThumbInteraction, { passive: true });
+  var lightboxTitle = document.getElementById('lightbox-title');
   var lightboxClose = document.getElementById('lightbox-close');
   var lightboxPrev = document.getElementById('lightbox-prev');
   var lightboxNext = document.getElementById('lightbox-next');
@@ -146,12 +151,34 @@
     }
   }
 
+  function markThumbInteraction() {
+    lastThumbInteraction = Date.now();
+  }
+
+  // Keeps the active thumbnail visible as slides change. Autoplay-driven
+  // changes skip the auto-scroll if the visitor touched the strip in the
+  // last THUMB_QUIET_MS, so it doesn't get yanked out from under them while
+  // they're browsing thumbnails by hand.
+  function maybeScrollThumbIntoView(thumbButton, isAutoplayDriven) {
+    if (!thumbButton) {
+      return;
+    }
+    if (isAutoplayDriven && Date.now() - lastThumbInteraction < THUMB_QUIET_MS) {
+      return;
+    }
+    thumbButton.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      inline: 'center',
+      block: 'nearest'
+    });
+  }
+
   // Purely a DOM-sync helper: renders the given (already-resolved) index into
   // the lightbox's slides/dots. The box carousel itself is the single source
   // of truth for "which slide is current" — see initCarousel's show().
-  function showLightboxSlide(index) {
+  function showLightboxSlide(index, isAutoplayDriven) {
     var slides = lightboxSlides.querySelectorAll('img');
-    var dots = lightboxDots.querySelectorAll('button');
+    var thumbs = lightboxThumbsTrack.querySelectorAll('button');
     if (!slides.length) {
       return;
     }
@@ -164,17 +191,22 @@
       // Load one slide ahead so the next nav/autoplay tick never shows a blank frame.
       resolveSlideSrc(slides[(resolved + 1) % slides.length]);
     }
-    dots.forEach(function (dot, n) {
-      dot.classList.toggle('is-active', n === resolved);
+    thumbs.forEach(function (thumb, n) {
+      if (n === resolved) {
+        thumb.setAttribute('aria-current', 'true');
+      } else {
+        thumb.removeAttribute('aria-current');
+      }
     });
+    maybeScrollThumbIntoView(thumbs[resolved], isAutoplayDriven);
   }
 
   // Navigating in the lightbox always goes through the underlying box's own
   // show(), so the box (hidden behind the overlay) stays on the exact same
   // slide — closing the lightbox then always animates the matching image.
-  function goToLightboxSlide(index) {
+  function goToLightboxSlide(index, isAutoplayDriven) {
     if (activeCarouselRoot && activeCarouselRoot._carouselShow) {
-      activeCarouselRoot._carouselShow(index);
+      activeCarouselRoot._carouselShow(index, isAutoplayDriven);
     }
   }
 
@@ -192,7 +224,7 @@
     }
     lightboxTimer = window.setInterval(function () {
       if (activeCarouselRoot && activeCarouselRoot._carouselIndex) {
-        goToLightboxSlide(activeCarouselRoot._carouselIndex() + 1);
+        goToLightboxSlide(activeCarouselRoot._carouselIndex() + 1, true);
       }
     }, AUTOPLAY_MS);
   }
@@ -245,7 +277,6 @@
     var sourceImg = boxSlides[startIndex];
     var startRect = sourceImg ? sourceImg.getBoundingClientRect() : null;
     var title = root.querySelector('h2');
-    var description = root.querySelector('p');
     var boxCaption = root.querySelector('.carousel-caption');
     var boxDots = root.querySelector('.carousel-dots');
 
@@ -255,7 +286,7 @@
     setFadeOpacity(boxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     lightboxSlides.innerHTML = '';
-    lightboxDots.innerHTML = '';
+    lightboxThumbsTrack.innerHTML = '';
 
     boxSlides.forEach(function (slide, n) {
       var img = document.createElement('img');
@@ -270,37 +301,37 @@
       }
       lightboxSlides.appendChild(img);
 
-      var dot = document.createElement('button');
-      dot.type = 'button';
-      dot.className = 'lightbox-dot';
-      dot.setAttribute('aria-label', 'Slide ' + (n + 1));
-      dot.addEventListener('click', function (event) {
+      var thumbImg = document.createElement('img');
+      thumbImg.alt = '';
+      thumbImg.loading = 'lazy';
+      thumbImg.decoding = 'async';
+      thumbImg.src = slide.dataset.src;
+
+      var thumbButton = document.createElement('button');
+      thumbButton.type = 'button';
+      thumbButton.setAttribute('aria-label', 'Photo ' + (n + 1) + ' of ' + boxSlides.length);
+      thumbButton.appendChild(thumbImg);
+      thumbButton.addEventListener('click', function (event) {
         event.stopPropagation();
         goToLightboxSlide(n);
         startLightboxAutoplay();
       });
-      lightboxDots.appendChild(dot);
+
+      var thumbItem = document.createElement('li');
+      thumbItem.className = 'lightbox-thumb';
+      thumbItem.appendChild(thumbButton);
+      lightboxThumbsTrack.appendChild(thumbItem);
     });
 
     lightboxPrev.hidden = boxSlides.length < 2;
     lightboxNext.hidden = boxSlides.length < 2;
 
-    lightboxCaption.innerHTML = '';
-    if (title) {
-      var h2 = document.createElement('h2');
-      h2.textContent = title.textContent;
-      lightboxCaption.appendChild(h2);
-    }
-    if (description) {
-      var p = document.createElement('p');
-      p.textContent = description.textContent;
-      lightboxCaption.appendChild(p);
-    }
+    lightboxTitle.textContent = title ? title.textContent : '';
     // Stay invisible until the image finishes scaling up to fullscreen (see
-    // the fade-in scheduled below) — otherwise they pop in at full size while
-    // the image is still small, looking like unrelated things loading in.
-    setFadeOpacity(lightboxCaption, 0, 0);
-    setFadeOpacity(lightboxDots, 0, 0);
+    // the fade-in scheduled below) — otherwise it pops in at full size while
+    // the image is still small, looking like an unrelated thing loading in.
+    setFadeOpacity(lightboxTitle, 0, 0);
+    setFadeOpacity(lightboxThumbsTrack, 0, 0);
 
     activeCarouselRoot = root;
     pauseBoxAutoplay(root);
@@ -341,8 +372,8 @@
 
     if (prefersReducedMotion) {
       startLightboxAutoplay();
-      setFadeOpacity(lightboxCaption, 1, 0);
-      setFadeOpacity(lightboxDots, 1, 0);
+      setFadeOpacity(lightboxTitle, 1, 0);
+      setFadeOpacity(lightboxThumbsTrack, 1, 0);
     } else {
       pendingTransitionTimeout = window.setTimeout(function () {
         if (targetImg) {
@@ -351,8 +382,8 @@
         pendingTransitionTimeout = null;
         startLightboxAutoplay();
         pendingCaptionTimeout = window.setTimeout(function () {
-          setFadeOpacity(lightboxCaption, 1, CAPTION_FADE_IN_MS);
-          setFadeOpacity(lightboxDots, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(lightboxTitle, 1, CAPTION_FADE_IN_MS);
+          setFadeOpacity(lightboxThumbsTrack, 1, CAPTION_FADE_IN_MS);
           pendingCaptionTimeout = null;
         }, CAPTION_FADE_IN_DELAY_MS);
       }, TRANSITION_MS);
@@ -392,8 +423,8 @@
 
     lightbox.classList.remove('is-visible');
     // Fade out immediately, independent of the image's FLIP animation below.
-    setFadeOpacity(lightboxCaption, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
-    setFadeOpacity(lightboxDots, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxTitle, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxThumbsTrack, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;
@@ -513,7 +544,7 @@
     var trigger = root.querySelector('.carousel-trigger');
     var index = 0;
 
-    function show(next) {
+    function show(next, isAutoplayDriven) {
       index = (next + slides.length) % slides.length;
       slides.forEach(function (slide, n) {
         slide.classList.toggle('is-active', n === index);
@@ -530,7 +561,7 @@
       // so the two never drift — closing always animates the slide the
       // visitor was just looking at.
       if (activeCarouselRoot === root) {
-        showLightboxSlide(index);
+        showLightboxSlide(index, isAutoplayDriven);
       }
     }
 
