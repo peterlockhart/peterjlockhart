@@ -409,8 +409,7 @@ body.lightbox-open {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: var(--radius);
+  object-fit: contain;
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -486,12 +485,14 @@ body.lightbox-open {
 .lightbox-thumb button {
   display: block;
   height: 64px;
+  min-width: 64px;
   padding: 0;
   border: 0;
   border-radius: 4px;
   overflow: hidden;
   opacity: 0.55;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
   transition: opacity 220ms ease, box-shadow 220ms ease;
 }
 
