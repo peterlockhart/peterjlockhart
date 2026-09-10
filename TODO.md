@@ -9,7 +9,7 @@
 - Write short bio
 - Add content to pets box
 - Add content to peterandconsuelo box
-- Update the README to include more context about the site
+
 
 # IDEAS AND CONSIDERATIONS
 
@@ -42,3 +42,4 @@
 - For the 5 boxes with external text links, make sure they all have the same utm parameter that peterandconsuelo.com have. Then add an SVG arrow pointing right to the right of the text. On hover, give a subtle ~5px slide to the right for that arrow. 
 - The fullscreen background overlay should respect the dark/light mode setting. The text and close button will need to adjust to this background color setting as well.
 - Use the same CSS styling for slide border radius from the peterandconsuelo repo (no border radius when the image touches the viewport sides)
+- Update the README to include more context about the site
