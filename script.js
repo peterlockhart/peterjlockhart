@@ -386,6 +386,7 @@
     // the image is still small, looking like an unrelated thing loading in.
     setFadeOpacity(lightboxTitle, 0, 0);
     setFadeOpacity(lightboxThumbsTrack, 0, 0);
+    setFadeOpacity(lightboxClose, 1, 0);
 
     activeCarouselRoot = root;
     pauseBoxAutoplay(root);
@@ -484,6 +485,7 @@
     // Fade out immediately, independent of the image's FLIP animation below.
     setFadeOpacity(lightboxTitle, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
     setFadeOpacity(lightboxThumbsTrack, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxClose, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;
