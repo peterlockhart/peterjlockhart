@@ -9,7 +9,7 @@
 - Write short bio
 - Add content to pets box
 - Add content to peterandconsuelo box
-
+- Update the README to include more context about the site
 
 # IDEAS AND CONSIDERATIONS
 
