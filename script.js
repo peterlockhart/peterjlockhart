@@ -387,6 +387,8 @@
     setFadeOpacity(lightboxTitle, 0, 0);
     setFadeOpacity(lightboxThumbsTrack, 0, 0);
     setFadeOpacity(lightboxClose, 1, 0);
+    setFadeOpacity(lightboxPrev, 1, 0);
+    setFadeOpacity(lightboxNext, 1, 0);
 
     activeCarouselRoot = root;
     pauseBoxAutoplay(root);
@@ -486,6 +488,8 @@
     setFadeOpacity(lightboxTitle, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
     setFadeOpacity(lightboxThumbsTrack, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
     setFadeOpacity(lightboxClose, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxPrev, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
+    setFadeOpacity(lightboxNext, 0, prefersReducedMotion ? 0 : CAPTION_FADE_OUT_MS);
 
     var activeImg = lightboxSlides.querySelector('.lightbox-slide.is-active');
     var targetImg = activeCarouselRoot ? activeCarouselRoot.querySelector('.carousel-slide.is-active') : null;

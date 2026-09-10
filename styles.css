@@ -119,6 +119,10 @@ body {
   gap: 0.5rem;
 }
 
+.box--family {
+  grid-column: span 2;
+}
+
 .box[data-name="sparrow-sleeps"] {
   grid-column: span 2;
 }
@@ -145,6 +149,7 @@ body {
 
   .box,
   .box--about,
+  .box--family,
   .box[data-name="sparrow-sleeps"],
   .box[data-name="illustration"],
   .box[data-name="woodworking"] {
@@ -606,6 +611,10 @@ body.lightbox-open {
   color: #fff;
 }
 
+.box[data-name="foxio"] p {
+  opacity: 0.8;
+}
+
 .box[data-name="sparrow-sleeps"] {
   background: #4fbc83;
   border-color: transparent;
@@ -615,6 +624,10 @@ body.lightbox-open {
 .box[data-name="sparrow-sleeps"] p,
 .box[data-name="sparrow-sleeps"] .box-link {
   color: #fff;
+}
+
+.box[data-name="sparrow-sleeps"] p {
+  opacity: 0.8;
 }
 
 .box[data-name="hendogisforever"] {
@@ -628,6 +641,10 @@ body.lightbox-open {
   color: #fff;
 }
 
+.box[data-name="hendogisforever"] p {
+  opacity: 0.8;
+}
+
 .box[data-name="iconshavefeelingstoo"] {
   background: #ffffff;
   border-color: transparent;
@@ -637,6 +654,10 @@ body.lightbox-open {
 .box[data-name="iconshavefeelingstoo"] p,
 .box[data-name="iconshavefeelingstoo"] .box-link {
   color: #000000;
+}
+
+.box[data-name="iconshavefeelingstoo"] p {
+  opacity: 0.8;
 }
 
 .site-footer {
