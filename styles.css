@@ -344,9 +344,39 @@ body {
   margin: 0;
   border: none;
   background: transparent;
-  /* A white circle with a maximize icon, replacing the pointer everywhere over
-     the box, hinting this carousel expands to fullscreen. */
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23fff'/%3E%3Cg transform='translate(20,20)' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpolyline points='9 21 3 21 3 15'/%3E%3Cline x1='21' y1='3' x2='14' y2='10'/%3E%3Cline x1='3' y1='21' x2='10' y2='14'/%3E%3C/g%3E%3C/svg%3E") 32 32, pointer;
+  /* The native pointer is replaced by .carousel-cursor below, which fades
+     and scales in/out instead of snapping in like a real cursor would. */
+  cursor: none;
+}
+
+/* Custom "expand to fullscreen" cursor: a white circle with a maximize icon
+   that follows the pointer anywhere over the box, fading/scaling in and out
+   on hover. Position (left/top) is set on the fly in script.js; only the
+   hover-driven opacity/scale transition lives here. `fixed` (and living on
+   <body>, per script.js) keeps it from being clipped by the box's own
+   `overflow: hidden`, which crops the carousel photo to the box's shape. */
+.carousel-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 500;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpolyline points='9 21 3 21 3 15'/%3E%3Cline x1='21' y1='3' x2='14' y2='10'/%3E%3Cline x1='3' y1='21' x2='10' y2='14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 1.5rem;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.85);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.carousel-cursor.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 .lightbox {

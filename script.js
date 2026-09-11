@@ -615,11 +615,48 @@
     staggerTimer = window.setTimeout(runStagger, STAGGER_MS);
   }
 
+  // Custom cursor shared by every carousel box (see .carousel-cursor in
+  // styles.css): a white circle with a maximize icon that follows the
+  // pointer, fading/scaling in and out on hover instead of snapping in like
+  // a real cursor would. It's `position: fixed` and lives on <body> — a
+  // child of the box would get clipped at the box's edges by the same
+  // `overflow: hidden` that keeps its carousel photo cropped to shape.
+  var carouselCursor = document.createElement('div');
+  carouselCursor.className = 'carousel-cursor';
+  document.body.appendChild(carouselCursor);
+
+  function moveCarouselCursor(event) {
+    carouselCursor.style.left = event.clientX + 'px';
+    carouselCursor.style.top = event.clientY + 'px';
+  }
+
   function initCarousel(root) {
     var slides = root.querySelectorAll('.carousel-slide');
     var dots = root.querySelectorAll('.carousel-dot');
     var trigger = root.querySelector('.carousel-trigger');
     var index = 0;
+
+    // Only mouse-type pointers hover in any meaningful sense, so touch/pen
+    // input leaves the custom cursor alone entirely.
+    root.addEventListener('pointerenter', function (event) {
+      if (event.pointerType !== 'mouse') {
+        return;
+      }
+      moveCarouselCursor(event);
+      carouselCursor.classList.add('is-visible');
+    });
+    root.addEventListener('pointermove', function (event) {
+      if (event.pointerType !== 'mouse') {
+        return;
+      }
+      moveCarouselCursor(event);
+    });
+    root.addEventListener('pointerleave', function (event) {
+      if (event.pointerType !== 'mouse') {
+        return;
+      }
+      carouselCursor.classList.remove('is-visible');
+    });
 
     function show(next, isAutoplayDriven) {
       index = (next + slides.length) % slides.length;
