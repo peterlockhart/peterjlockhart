@@ -1,6 +1,5 @@
 # TODO
 
-- Select and include custom web fonts
 - Add Google Analytics event tracking for each bento box interaction
 - Add open graph image
 - Add Favicon
@@ -43,3 +42,4 @@
 - The fullscreen background overlay should respect the dark/light mode setting. The text and close button will need to adjust to this background color setting as well.
 - Use the same CSS styling for slide border radius from the peterandconsuelo repo (no border radius when the image touches the viewport sides)
 - Update the README to include more context about the site
+- Select and include custom web fonts

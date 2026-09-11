@@ -12,7 +12,8 @@
   --accent: #2f6fed;
   --radius: 14px;
   --gap: 1rem;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-heading: "owners", sans-serif;
+  --font-body: "basic-sans", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,8 +48,24 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font);
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-style: normal;
   padding: clamp(1rem, 4vw, 2.5rem);
+}
+
+h1,
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: 0.05em;
+}
+
+a {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-style: normal;
 }
 
 .bento {
@@ -223,8 +240,9 @@ body {
   gap: 0.35rem;
   color: var(--accent);
   text-decoration: none;
-  font-weight: 600;
   margin-top: auto;
+  letter-spacing: 0.1em;
+  font-size: 14px;
 }
 
 .box-link-arrow {
