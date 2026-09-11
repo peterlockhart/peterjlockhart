@@ -110,6 +110,10 @@ a {
   }
 }
 
+.box[hidden] {
+  display: none;
+}
+
 .box--about {
   position: relative;
   grid-column: span 2;
