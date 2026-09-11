@@ -231,6 +231,7 @@ body {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+  stroke-width: 2.75;
   transition: transform 0.2s ease;
 }
 
@@ -288,7 +289,7 @@ body {
   position: absolute;
   inset: auto 0 0 0;
   z-index: 2;
-  padding: 3rem 1.1rem 2rem;
+  padding: 3rem .8rem 1.5rem;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0) 70%);
   pointer-events: none;
 }
@@ -298,25 +299,29 @@ body {
   margin: 0;
 }
 
+/* Instagram Stories-style progress bar: one thin segment per slide,
+   spanning the full width of the box rather than a row of small dots. */
 .carousel-dots {
   position: absolute;
-  left: 1.1rem;
-  bottom: 1.1rem;
+  bottom: 0.7rem;
+  left: 0.7rem;
+  right: 0.7rem;
   z-index: 3;
   display: flex;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .carousel-dot {
   position: relative;
-  width: 6px;
-  height: 6px;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3px;
   padding: 0;
   border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .carousel-dot::after {
@@ -327,11 +332,10 @@ body {
 
 .carousel-dot.is-active {
   background: #fff;
-  transform: scale(1.15);
 }
 
 .carousel-dot:not(.is-active):hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .carousel-trigger {

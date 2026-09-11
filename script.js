@@ -630,6 +630,13 @@
     carouselCursor.style.top = event.clientY + 'px';
   }
 
+  // The progress-bar markers sit above the trigger and have their own
+  // (normal) pointer cursor — the custom follower should get out of the way
+  // over them rather than covering that native cursor up.
+  function isOverMarkers(event) {
+    return Boolean(event.target && event.target.closest && event.target.closest('.carousel-dots'));
+  }
+
   function initCarousel(root) {
     var slides = root.querySelectorAll('.carousel-slide');
     var dots = root.querySelectorAll('.carousel-dot');
@@ -639,7 +646,7 @@
     // Only mouse-type pointers hover in any meaningful sense, so touch/pen
     // input leaves the custom cursor alone entirely.
     root.addEventListener('pointerenter', function (event) {
-      if (event.pointerType !== 'mouse') {
+      if (event.pointerType !== 'mouse' || isOverMarkers(event)) {
         return;
       }
       moveCarouselCursor(event);
@@ -649,7 +656,12 @@
       if (event.pointerType !== 'mouse') {
         return;
       }
+      if (isOverMarkers(event)) {
+        carouselCursor.classList.remove('is-visible');
+        return;
+      }
       moveCarouselCursor(event);
+      carouselCursor.classList.add('is-visible');
     });
     root.addEventListener('pointerleave', function (event) {
       if (event.pointerType !== 'mouse') {
