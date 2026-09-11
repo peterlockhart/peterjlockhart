@@ -579,7 +579,6 @@ body.lightbox-open {
 .lightbox-thumb button {
   display: block;
   height: 64px;
-  min-width: 64px;
   padding: 0;
   border: 0;
   border-radius: 4px;
