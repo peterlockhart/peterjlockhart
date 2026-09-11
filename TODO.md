@@ -1,13 +1,9 @@
 # TODO
 
-- Add Google Analytics event tracking for each bento box interaction
 - Add open graph image
 - Add Favicon
 - Update the social icons to better SVGs
-- Collect assets for each carousel
-- Write short bio
 - Add content to pets box
-- Add content to peterandconsuelo box
 
 
 # IDEAS AND CONSIDERATIONS
@@ -43,3 +39,7 @@
 - Use the same CSS styling for slide border radius from the peterandconsuelo repo (no border radius when the image touches the viewport sides)
 - Update the README to include more context about the site
 - Select and include custom web fonts
+- Add Google Analytics event tracking for each bento box interaction
+- Collect assets for each carousel
+- Write short bio
+- Add content to peterandconsuelo box
