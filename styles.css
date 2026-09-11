@@ -693,33 +693,33 @@ body.lightbox-open {
   opacity: 0.8;
 }
 
-.box[data-name="hendogisforever"] {
+.box[data-name="hen-dog-is-forever"] {
   background: #28448e;
   border-color: transparent;
 }
 
-.box[data-name="hendogisforever"] h2,
-.box[data-name="hendogisforever"] p,
-.box[data-name="hendogisforever"] .box-link {
+.box[data-name="hen-dog-is-forever"] h2,
+.box[data-name="hen-dog-is-forever"] p,
+.box[data-name="hen-dog-is-forever"] .box-link {
   color: #fff;
 }
 
-.box[data-name="hendogisforever"] p {
+.box[data-name="hen-dog-is-forever"] p {
   opacity: 0.8;
 }
 
-.box[data-name="iconshavefeelingstoo"] {
+.box[data-name="icons-have-feelings-too"] {
   background: #ffffff;
   border-color: transparent;
 }
 
-.box[data-name="iconshavefeelingstoo"] h2,
-.box[data-name="iconshavefeelingstoo"] p,
-.box[data-name="iconshavefeelingstoo"] .box-link {
+.box[data-name="icons-have-feelings-too"] h2,
+.box[data-name="icons-have-feelings-too"] p,
+.box[data-name="icons-have-feelings-too"] .box-link {
   color: #000000;
 }
 
-.box[data-name="iconshavefeelingstoo"] p {
+.box[data-name="icons-have-feelings-too"] p {
   opacity: 0.8;
 }
 

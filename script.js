@@ -9,6 +9,35 @@
     copyrightYear.textContent = new Date().getFullYear();
   }
 
+  function trackEvent(name, params) {
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', name, params);
+    }
+  }
+
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.box-link');
+    if (!link) {
+      return;
+    }
+    var box = link.closest('.box');
+    trackEvent('box_link_click', {
+      box_name: box ? box.dataset.name : '',
+      link_url: link.href
+    });
+  });
+
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest('.social-icons a');
+    if (!link) {
+      return;
+    }
+    trackEvent('social_link_click', {
+      network: link.getAttribute('aria-label') || '',
+      link_url: link.href
+    });
+  });
+
   var THEME_KEY = 'theme';
   var darkSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   var themeToggle = document.getElementById('theme-toggle');
@@ -61,6 +90,7 @@
       var next = effectiveTheme() === 'dark' ? 'light' : 'dark';
       storeTheme(next);
       applyTheme(next);
+      trackEvent('theme_toggle', { theme: next });
     });
 
     darkSchemeQuery.addEventListener('change', function () {
@@ -95,6 +125,12 @@
   var lightboxTimer = null;
   var lastTrigger = null;
   var activeCarouselRoot = null;
+  var lightboxOpenedAt = null;
+
+  function activeBoxName() {
+    var box = activeCarouselRoot ? activeCarouselRoot.closest('.box') : null;
+    return box ? box.dataset.name : '';
+  }
   var pendingTransitionTimeout = null;
   var pendingCaptionTimeout = null;
   var closingLightbox = false;
@@ -367,6 +403,7 @@
       thumbButton.appendChild(thumbImg);
       thumbButton.addEventListener('click', function (event) {
         event.stopPropagation();
+        trackEvent('gallery_nav', { box_name: activeBoxName(), method: 'thumbnail' });
         goToLightboxSlide(n);
         startLightboxAutoplay();
       });
@@ -391,6 +428,7 @@
     setFadeOpacity(lightboxNext, 1, 0);
 
     activeCarouselRoot = root;
+    lightboxOpenedAt = Date.now();
     pauseBoxAutoplay(root);
     lastTrigger = root.querySelector('.carousel-trigger');
     // Hide the box's own carousel for the duration of the lightbox so only the
@@ -473,6 +511,10 @@
     if (lightbox.hidden || closingLightbox) {
       return;
     }
+    trackEvent('gallery_close', {
+      box_name: activeBoxName(),
+      duration_sec: lightboxOpenedAt ? Math.round((Date.now() - lightboxOpenedAt) / 1000) : 0
+    });
     stopLightboxAutoplay();
     if (pendingTransitionTimeout) {
       window.clearTimeout(pendingTransitionTimeout);
@@ -544,11 +586,13 @@
   }
 
   lightboxPrev.addEventListener('click', function () {
+    trackEvent('gallery_nav', { box_name: activeBoxName(), method: 'button_prev' });
     goToLightboxSlide(currentLightboxIndex() - 1);
     startLightboxAutoplay();
   });
 
   lightboxNext.addEventListener('click', function () {
+    trackEvent('gallery_nav', { box_name: activeBoxName(), method: 'button_next' });
     goToLightboxSlide(currentLightboxIndex() + 1);
     startLightboxAutoplay();
   });
@@ -560,9 +604,11 @@
     if (event.key === 'Escape') {
       closeLightbox();
     } else if (event.key === 'ArrowLeft' && !lightboxPrev.hidden) {
+      trackEvent('gallery_nav', { box_name: activeBoxName(), method: 'keyboard_prev' });
       goToLightboxSlide(currentLightboxIndex() - 1);
       startLightboxAutoplay();
     } else if (event.key === 'ArrowRight' && !lightboxNext.hidden) {
+      trackEvent('gallery_nav', { box_name: activeBoxName(), method: 'keyboard_next' });
       goToLightboxSlide(currentLightboxIndex() + 1);
       startLightboxAutoplay();
     }
@@ -704,6 +750,8 @@
     dots.forEach(function (dot, n) {
       dot.addEventListener('click', function (event) {
         event.stopPropagation();
+        var box = root.closest('.box');
+        trackEvent('carousel_dot_click', { box_name: box ? box.dataset.name : '', slide_index: n + 1 });
         show(n);
         // Drop any queued auto-advance for this box so a manual pick doesn't
         // get immediately followed by an automatic one.
@@ -715,6 +763,8 @@
     });
 
     trigger.addEventListener('click', function () {
+      var box = root.closest('.box');
+      trackEvent('gallery_open', { box_name: box ? box.dataset.name : '' });
       openLightbox(root, index);
     });
 
